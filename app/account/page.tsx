@@ -1,2 +1,2 @@
 import {AccountManager} from '../account-manager';
-export default function AccountPage(){return <main className="account-page"><a className="text-button" href="/">← กลับหน้าหลัก</a><div className="brand">Banphru<span>city</span>.</div><AccountManager self/></main>}
+export default function AccountPage(){return <main className="account-page"><a className="text-button" href="/">← กลับหน้าหลัก</a><div className="brand"><img className="brand-seal" src="/images/banphrucity-seal.png" alt="ตราเทศบาลเมืองบ้านพรุ" width={44} height={44}/><span className="brand-wordmark">Banphru<span>city</span><span className="dot">.</span></span></div><AccountManager self/></main>}
