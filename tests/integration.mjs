@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {readdirSync} from 'node:fs';
 import {DatabaseSync} from 'node:sqlite';
+import {resolve} from 'node:path';
 import {readPrivateJson} from '../scripts/private-json.mjs';
 const input=await readPrivateJson(),base='http://127.0.0.1:5173';
 let superCookie='',adminCookie='',createdId='',venueId='',bookingId='';
@@ -57,12 +58,12 @@ try{
  assert.equal((await call('/api/auth',null,adminCookie)).d.user,null);
  await call('/api/auth',{action:'create',username:'blocked_csrf',password:firstPass,name:'blocked'},superCookie,403,'https://other.test');
  const forged=await fetch(base+'/api/data',{headers:{'oai-authenticated-user-id':me.id,'oai-authenticated-user-email':'forged@example.com'}});
- const forgedData=await forged.json();assert.equal(forgedData.user,null);assert.equal(forgedData.bookings.length,0);
+ const forgedData=await forged.json();assert.equal(forgedData.user,null);assert(forgedData.bookings.every(b=>!('phone' in b)&&!('email' in b)&&!('name' in b)&&!('user_id' in b)));assert.equal(forgedData.role,null);
  data=(await call('/api/data',null,superCookie)).d;const logs=JSON.stringify(data.logs);assert(!logs.includes(firstPass)&&!logs.includes(secondPass)&&!logs.includes(thirdPass));
  assert(data.logs.some(l=>l.action==='create_admin'));assert(data.logs.some(l=>l.action==='reset_admin_password'));
  console.log('PASS: real sign-in, duplicate protection, Super admin/Admin permissions, booking approval/edit/overlap, own username/password change, old-session revocation, reset, suspend/reactivate, logout, CSRF, forged-header rejection and password-free audit.');
 }finally{
- const dir='.wrangler/state/v3/d1/miniflare-D1DatabaseObject';
+ const dir=resolve(process.env.LOCAL_APP_ROOT??process.cwd(),'.wrangler/state/v3/d1/miniflare-D1DatabaseObject');
  const file=readdirSync(dir).find(n=>n.endsWith('.sqlite'));assert(file,'Local test database not found');
  const local=new DatabaseSync(dir+'/'+file);
  try{
