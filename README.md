@@ -99,3 +99,12 @@ workflow นี้ไม่ Deploy เว็บและไม่ทำงาน
 บัญชี Admin เริ่มต้นใช้ INITIAL_ADMIN_USERNAME, INITIAL_ADMIN_PASSWORD และ INITIAL_ADMIN_NAME ใน GitHub Secrets
 workflow จะสร้าง Super admin และ Admin เริ่มต้น โดยไม่แก้ไขข้อมูลล็อกอินของบัญชีที่มีอยู่แล้ว
 เมื่อเปลี่ยนชื่อผู้ใช้หรือรหัสผ่านในเว็บภายหลัง การรัน workflow อีกครั้งจะไม่ย้อนกลับไปใช้ค่าตั้งต้น
+
+## Deploy เว็บผ่าน GitHub Actions
+
+workflow ชื่อ Deploy to Cloudflare ทำงานเมื่อกด Run workflow เท่านั้น โดย Build เว็บ ใช้ migration สร้างบัญชีเริ่มต้นถ้ายังไม่มี แล้วเผยแพร่ Worker พร้อมไฟล์เว็บ
+ก่อนใช้ต้องสร้าง D1 ชื่อ banpru-revenue-db และเปิด R2 พร้อมสร้าง bucket ชื่อ banpru-revenue-files ในบัญชีเดียวกัน
+เพิ่ม Secrets ชื่อ CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_DATABASE_ID, CLOUDFLARE_API_TOKEN และ Secrets บัญชีเริ่มต้นที่ระบุข้างต้น
+API token ต้องมีสิทธิ์แก้ไข Workers Scripts, D1 และเข้าถึง R2 ของบัญชีเป้าหมาย; ใช้สิทธิ์เฉพาะบัญชีที่ต้องการ
+ไฟล์ตั้งค่า Deploy สร้างด้วย npm run cloudflare:prepare หลัง Build และไม่ถูกเก็บใน Git
+การรันซ้ำรักษาบัญชีและรหัสผ่านที่เปลี่ยนผ่านเว็บแล้ว
