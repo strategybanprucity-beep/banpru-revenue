@@ -116,3 +116,10 @@ Super admin เข้า จัดการสถานที่ → รูป�
 กด กลับไปใช้ภาพตัวอย่าง เพื่อนำรูปออกได้ ค่ารูปเก็บใน D1 และไฟล์เก็บใน R2; Admin ทั่วไปเปลี่ยนรูปไม่ได้
 ก่อนใช้กับฐานข้อมูลเดิม ให้ใช้ migration drizzle/0002_sweet_spitfire.sql เพิ่มเติม; workflow Deploy to Cloudflare จะใช้ migration นี้ด้วย
 ทดสอบด้วย node tests/banner.mjs โดยรับข้อมูลบัญชีทดสอบ Super admin และ Admin ผ่าน stdin ที่ซ่อนข้อมูล และใช้กับ local dev เท่านั้น
+
+## เริ่มใช้งานแบบฟรี โดยยังไม่เปิด R2
+
+ตั้ง R2_ENABLED=false ก่อน npm run cloudflare:prepare เพื่อ Deploy เฉพาะ Workers + D1 โดยไม่สร้าง R2 subscription
+หน้าเว็บจะปิดปุ่มอัปโหลดแบนเนอร์และรูปสถานที่ และไม่แสดงช่องแนบเอกสารการจอง การจัดการสถานที่และการจองยังทำงานได้
+GitHub Actions workflow Deploy to Cloudflare เริ่มต้นโดยไม่เปิด R2; เมื่อเปิด R2 และสร้าง bucket แล้วจึงเลือก enable_r2 ตอน Run workflow
+บัญชีออนไลน์สร้างผ่านสคริปต์ provisioning ซึ่งรักษาชื่อผู้ใช้และรหัสผ่านที่แก้ภายหลัง การอัปเดตเว็บไม่คัดลอก local D1 หรือข้อมูล SAMPLE ไปออนไลน์

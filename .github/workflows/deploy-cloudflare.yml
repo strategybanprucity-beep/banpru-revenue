@@ -1,6 +1,11 @@
 name: Deploy to Cloudflare
 on:
   workflow_dispatch:
+    inputs:
+      enable_r2:
+        description: Enable uploads (requires an existing R2 bucket)
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -15,6 +20,7 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       WORKER_NAME: banpru-revenue
       DATABASE_NAME: banpru-revenue-db
+      R2_ENABLED: ${{ inputs.enable_r2 }}
       R2_BUCKET_NAME: banpru-revenue-files
     steps:
       - uses: actions/checkout@v4
