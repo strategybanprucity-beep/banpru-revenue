@@ -15,6 +15,13 @@
       "when": 1792394422893,
       "tag": "0001_goofy_wolfsbane",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792398940359,
+      "tag": "0002_sweet_spitfire",
+      "breakpoints": true
     }
   ]
 }

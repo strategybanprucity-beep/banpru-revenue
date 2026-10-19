@@ -6,3 +6,5 @@ export const audit = sqliteTable('admin_audit_log', { id: text().primaryKey(), a
 export const authUsers = sqliteTable('auth_users', { id:text().primaryKey(), username:text().notNull().unique(), name:text().notNull(), password_hash:text().notNull(), role:text({enum:['admin','super_admin']}).notNull(), active:integer().notNull().default(1), bootstrap:integer().unique(), created_at:text().notNull() });
 export const authSessions = sqliteTable('auth_sessions', { token_hash:text().primaryKey(), user_id:text().notNull().references(()=>authUsers.id,{onDelete:'cascade'}), expires_at:integer().notNull() });
 export const authAttempts = sqliteTable('auth_attempts', { key:text().primaryKey(), count:integer().notNull(), expires_at:integer().notNull() });
+
+export const siteSettings = sqliteTable('site_settings', { key:text().primaryKey(), value:text() });
