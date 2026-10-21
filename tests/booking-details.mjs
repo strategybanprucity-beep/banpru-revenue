@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import fs from 'node:fs';
+import {z} from 'zod';
+const source=fs.readFileSync('app/api/data/route.ts','utf8');
+const schema=new Function('z','return '+source.match(/const bookingSchema=(.*);/)[1])(z);
+const data={venue_id:'venue',name:'Test',phone:'0000000000',email:'test@example.com',department:'หน่วยงานภายนอก',external_department:'Example',purpose:'Test',attendees:2,start_at:'2026-12-01T01:30:00.000Z',end_at:'2026-12-01T09:30:00.000Z',equipment:['จอภาพ','บันทึกเสียง'],additional_requests:'Test request',all_day:true};
+assert.equal(schema.parse(data).equipment.length,2);
+for(const patch of [{email:'bad'},{equipment:['unsupported']},{department:'invalid'}])assert.equal(schema.safeParse({...data,...patch}).success,false);
+const db=new DatabaseSync(':memory:');db.exec(fs.readFileSync('drizzle/0000_neat_whistler.sql','utf8'));db.exec(fs.readFileSync('drizzle/0003_booking_details.sql','utf8'));db.exec("INSERT INTO venues VALUES ('venue','Venue','Location',5,'',NULL,1)");
+const sql=source.match(/d.prepare\("(INSERT INTO bookings .*?)"\)/)[1];const insert=db.prepare(sql);const b=schema.parse(data);const args=['test',b.venue_id,'guest:test',b.name,b.email,b.phone,b.purpose,b.attendees,b.start_at,b.end_at,null,new Date().toISOString(),b.department,b.external_department,JSON.stringify(b.equipment),b.additional_requests,+b.all_day,b.venue_id,b.end_at,b.start_at];
+assert.equal(insert.run(...args).changes,1);assert.equal(insert.run('overlap',...args.slice(1)).changes,0);
+const row=db.prepare('SELECT * FROM bookings').get();assert.equal(row.email,data.email);assert.equal(row.department,data.department);assert.deepEqual(JSON.parse(row.equipment),data.equipment);assert.equal(row.all_day,1);assert.equal(row.additional_requests,data.additional_requests);
+console.log('PASS: booking fields validation, migration, storage and atomic overlap');

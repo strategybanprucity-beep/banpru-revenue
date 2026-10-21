@@ -1,0 +1,35 @@
+{
+  "parentFolderId": "1Og4UrAHQaRqHDgiYdiplb3ROznwRF6ts",
+  "parentFolderUrl": "https://drive.google.com/drive/folders/1Og4UrAHQaRqHDgiYdiplb3ROznwRF6ts",
+  "enabled": false,
+  "venues": [
+    {
+      "name": "Online Conference Room",
+      "folderId": "134VActYS9XGngbX2ZEmv0x4IxgEnHU9K"
+    },
+    {
+      "name": "ตลาดน้ำบ้านพรุ",
+      "folderId": "1mzYRNhASzKyO6yIdKhCORBswZdSGrHuO"
+    },
+    {
+      "name": "ลานกีฬาภาษีเจริญ",
+      "folderId": "1m244oJDOU7k14YGA-nhNguOrwpUVihyO"
+    },
+    {
+      "name": "วิทยาลัยวัยหวาน",
+      "folderId": "1Xp_RxIDJMQDYxg4S8AwG69Hr-h8zv6MZ"
+    },
+    {
+      "name": "ห้องประชุมชั้น 2",
+      "folderId": "1GHpUUurLrPwCVKzakXcvfd0VrXsoCM06"
+    },
+    {
+      "name": "ห้องประชุมสภาเทศบาล",
+      "folderId": "1HxJ_pi_hwXXIb80CkUgD_5gyAu6EhXh7"
+    },
+    {
+      "name": "อุทยานการเรียนรู้บ้านพรุ (TKPARK BANPRU)",
+      "folderId": "1j3hJDhl3aZA2kNLDDOv9DZ6MxF12kjNC"
+    }
+  ]
+}
