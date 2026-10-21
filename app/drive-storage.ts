@@ -1,11 +1,13 @@
+import {hasOnlyFileDriveScope} from './drive-scope.ts';
 /** Google credentials are supplied as Worker secrets; never expose them to the client. */
-export type DriveCredentials={GOOGLE_CLIENT_ID?:string;GOOGLE_CLIENT_SECRET?:string;GOOGLE_REFRESH_TOKEN?:string};
+export type DriveCredentials={GOOGLE_CLIENT_ID?:string;GOOGLE_CLIENT_SECRET?:string;GOOGLE_REFRESH_TOKEN?:string;LIMITED?:boolean};
 export const driveConfigured=(credentials:DriveCredentials)=>Boolean(credentials.GOOGLE_CLIENT_ID&&credentials.GOOGLE_CLIENT_SECRET&&credentials.GOOGLE_REFRESH_TOKEN);
 export async function driveAccessToken(credentials:DriveCredentials,request:typeof fetch=fetch){
  if(!driveConfigured(credentials))throw new Error('Google Drive is not connected');
  const response=await request('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:credentials.GOOGLE_CLIENT_ID!,client_secret:credentials.GOOGLE_CLIENT_SECRET!,refresh_token:credentials.GOOGLE_REFRESH_TOKEN!,grant_type:'refresh_token'})});
- const data=await response.json() as {access_token?:string};
+ const data=await response.json() as {access_token?:string;scope?:string};
  if(!response.ok||!data.access_token)throw new Error('Google Drive authorization failed');
+ if(credentials.LIMITED&&!hasOnlyFileDriveScope(data.scope??''))throw new Error('Unexpected Google Drive permissions');
  return data.access_token;
 }
 export async function uploadDrivePdf(credentials:DriveCredentials,folderId:string,file:File,request:typeof fetch=fetch){

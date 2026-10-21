@@ -1,3 +1,4 @@
+import {hasOnlyFileDriveScope} from '../../../drive-scope';
 import {env} from 'cloudflare:workers';
 import {cookies} from 'next/headers';
 import {getAppUser,digest} from '../../../user-auth';
@@ -15,12 +16,11 @@ export async function GET(req:Request){
  if(expected.actor!==user.userId||expected.expires<Date.now())return fail('คำขอหมดอายุ');
  const code=url.searchParams.get('code');if(!code)return fail('ยังไม่ได้อนุญาต Google Drive');
  const response=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:env.GOOGLE_CLIENT_ID!,client_secret:env.GOOGLE_CLIENT_SECRET!,grant_type:'authorization_code',redirect_uri:new URL('/api/google-drive/callback',req.url).href,code,code_verifier:expected.verifier})});
- const token=await response.json() as {access_token?:string;refresh_token?:string};if(!response.ok||!token.refresh_token||!token.access_token)return fail('เชื่อมต่อไม่สำเร็จ กรุณาเริ่มใหม่');
+ const token=await response.json() as {access_token?:string;refresh_token?:string;scope?:string;refresh_token_expires_in?:number};if(!response.ok||!token.refresh_token||!token.access_token)return fail('เชื่อมต่อไม่สำเร็จ กรุณาเริ่มใหม่');
  const profileResponse=await fetch('https://openidconnect.googleapis.com/v1/userinfo',{headers:{Authorization:'Bearer '+token.access_token}});const profile=await profileResponse.json() as {email?:string;email_verified?:boolean};
  if(!profileResponse.ok||!profile.email_verified||profile.email?.toLowerCase()!==DRIVE_OWNER)return fail('กรุณาใช้บัญชี '+DRIVE_OWNER);
- const folder=await fetch('https://www.googleapis.com/drive/v3/files/1Og4UrAHQaRqHDgiYdiplb3ROznwRF6ts?fields=id,capabilities(canAddChildren)',{headers:{Authorization:'Bearer '+token.access_token}});const access=await folder.json() as {capabilities?:{canAddChildren?:boolean}};
- if(!folder.ok||!access.capabilities?.canAddChildren)return fail('บัญชีนี้ยังไม่มีสิทธิ์เพิ่มไฟล์ในโฟลเดอร์ Revenue');
- await env.DB!.batch([env.DB!.prepare("INSERT INTO site_settings (key,value) VALUES ('google_drive_token',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").bind(await sealDriveToken(token.refresh_token)),env.DB!.prepare("INSERT INTO admin_audit_log (id,actor_id,action,target_type,target_id,details,created_at) VALUES (?,?,'connect','google_drive','Revenue',?,?)").bind(crypto.randomUUID(),user.userId,JSON.stringify({email:DRIVE_OWNER}),new Date().toISOString())]);
- return new Response('เชื่อม Google Drive สำเร็จแล้ว เปิดรับไฟล์ PDF ไม่เกิน 10 MB โดยแยกโฟลเดอร์ตามสถานที่ กลับไปใช้งานที่ https://revenue.banphru.workers.dev/',{headers});
+ if(!hasOnlyFileDriveScope(token.scope??''))return fail('Google ยังให้สิทธิ์แบบกว้าง กรุณายกเลิกการเชื่อมต่อเดิมแล้วเริ่มใหม่');
+ await env.DB!.prepare("INSERT INTO site_settings (key,value) VALUES ('google_drive_pending',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").bind(JSON.stringify({token:await sealDriveToken(token.refresh_token),scope:token.scope,expires:Date.now()+3600000,refreshExpiresIn:token.refresh_token_expires_in??null,actor:user.userId})).run();
+ return new Response(null,{status:303,headers:{...headers,Location:new URL('/admin/drive',req.url).href}});
  }catch{return fail('เชื่อม Google Drive ไม่สำเร็จ กรุณาลองใหม่',503)}
 }
