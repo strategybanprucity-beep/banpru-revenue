@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {bangkokDay,calendarToday,bookingTimeError} from '../app/booking-time.ts';
+const now=Date.parse('2026-10-21T03:00:00.000Z');
+assert.equal(bookingTimeError('2026-10-20T10:00:00+07:00','2026-10-20T11:00:00+07:00',now)?.includes('ย้อนหลัง'),true);
+assert.equal(bookingTimeError('2026-10-21T09:59:00+07:00','2026-10-21T11:00:00+07:00',now)?.includes('ย้อนหลัง'),true);
+assert.equal(bookingTimeError('2026-10-21T10:01:00+07:00','2026-10-21T11:00:00+07:00',now),null);
+assert.equal(bookingTimeError('2026-10-22T08:30:00+07:00','2026-10-22T08:30:00+07:00',now)?.includes('สิ้นสุด'),true);
+assert(bookingTimeError('invalid','invalid',now));
+assert.equal(bangkokDay(Date.parse('2026-10-20T16:59:59Z')),'2026-10-20');
+assert.equal(bangkokDay(Date.parse('2026-10-20T17:00:00Z')),'2026-10-21');
+const day=calendarToday(Date.parse('2026-10-31T18:00:00Z'));assert.equal(day.getMonth(),10);assert.equal(day.getDate(),1);assert.equal(day.getHours(),0);
+console.log('PASS: past dates and earlier time today blocked, future allowed, Bangkok midnight/month boundary');
