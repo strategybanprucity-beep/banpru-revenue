@@ -1,8 +1,10 @@
+import {receiveDriveDocument,serveDriveDocument} from '../../drive-documents';
 import { env } from 'cloudflare:workers';
 import { getAppUser } from '../../user-auth';
 export const dynamic='force-dynamic';
 export async function POST(req:Request){
  if(req.headers.get('origin')!==new URL(req.url).origin)return Response.json({error:'คำขอไม่ถูกต้อง'},{status:403});
+ if(new URL(req.url).searchParams.get('kind')==='document')return receiveDriveDocument(req);
  const u=await getAppUser();if(!u)return Response.json({error:'กรุณาเข้าสู่ระบบ'},{status:401});
  if(!env.BUCKET||!env.DB)return Response.json({error:'พื้นที่เก็บไฟล์ไม่พร้อม'},{status:503});
  const requested=new URL(req.url).searchParams.get('kind');const kind=requested==='banner'?'site-images':requested==='image'?'venue-images':'booking-docs';const isImage=kind!=='booking-docs';
@@ -25,7 +27,7 @@ export async function POST(req:Request){
  return Response.json({key});
 }
 export async function GET(req:Request){
- const key=new URL(req.url).searchParams.get('key')??'';if(!env.BUCKET||!env.DB)return new Response('Unavailable',{status:503});
+ const key=new URL(req.url).searchParams.get('key')??'';if(key.startsWith('drive/'))return serveDriveDocument(key);if(!env.BUCKET||!env.DB)return new Response('Unavailable',{status:503});
  const u=await getAppUser();
  if(key.startsWith('booking-docs/')){
  if(!u)return new Response('Unauthorized',{status:401});

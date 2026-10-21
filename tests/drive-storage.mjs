@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {driveConfigured,uploadDrivePdf} from '../app/drive-storage.ts';
+const credentials={GOOGLE_CLIENT_ID:'test',GOOGLE_CLIENT_SECRET:'test',GOOGLE_REFRESH_TOKEN:'test'};
+assert.equal(driveConfigured({}),false);
+let calls=[];const request=async(url,options)=>{calls.push({url,options});if(url.includes('oauth2.'))return Response.json({access_token:'test-token'});if(options.method==='POST'){assert.deepEqual(JSON.parse(options.body).parents,['venue-folder']);return new Response('',{headers:{location:'https://www.googleapis.com/upload/drive/v3/files?upload_id=test'}})}return Response.json({id:'file-id',parents:['venue-folder']})};
+assert.equal(await uploadDrivePdf(credentials,'venue-folder',new File(['%PDF-test'],'private-name.pdf',{type:'application/pdf'}),request),'file-id');
+assert.equal(calls.length,3);assert(!calls[1].options.body.includes('private-name'));
+await assert.rejects(()=>uploadDrivePdf(credentials,'venue-folder',new File(['invalid'],'x.pdf',{type:'application/pdf'}),request));
+await assert.rejects(()=>uploadDrivePdf(credentials,'venue-folder',new File(['%PDF-test'],'x.pdf',{type:'application/pdf'}),async()=>Response.json({error:'invalid_grant'},{status:400})));
+console.log('PASS: private venue-folder PDF upload, invalid content and revoked authorization');
