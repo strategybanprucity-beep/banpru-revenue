@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {bookingNoticeText,sendLineMessage} from '../app/line-message.ts';
 const text=bookingNoticeText({id:'test-booking',venue_name:'ห้องประชุม',start_at:'2026-11-01T01:30:00Z',end_at:'2026-11-01T09:30:00Z',status:'pending',name:'PRIVATE NAME',phone:'PRIVATE PHONE',email:'PRIVATE EMAIL'});
-assert(text.includes('08:30'));assert(text.includes('16:30'));assert(text.includes('รออนุมัติ'));assert(!text.includes('PRIVATE'));
+assert(text.includes('08:30'));assert(text.includes('16:30'));assert(text.includes('รออนุมัติ'));assert(text.includes('PRIVATE NAME'));assert(!text.includes('PRIVATE PHONE'));assert(!text.includes('PRIVATE EMAIL'));
 let calls=[];let sequence=[503,200];
 let result=await sendLineMessage('test-token','test-group',text,'same-key',async(url,options)=>{calls.push(options);return new Response('{}',{status:sequence.shift()})});
 assert(result.ok);assert.equal(calls.length,2);assert.equal(calls[0].headers['X-Line-Retry-Key'],calls[1].headers['X-Line-Retry-Key']);
