@@ -87,3 +87,17 @@ footer span,footer small{font-size:16px;color:#64756d}
 .preview-form .all-day-option{display:flex;align-items:center;gap:10px;padding:12px 16px;margin:0 0 22px;background:#edf5ef;border:1px dashed #b6cfc0;border-radius:10px;color:#387365;font-weight:700;cursor:pointer}.preview-form .all-day-option input{width:18px;height:18px;margin:0;accent-color:#387365;flex:0 0 18px}.thai-date input[readonly]{background:#edf5ef;color:#387365}
 .booking-fields.preview-form{padding:0}.booking-fields .all-day-option{display:flex}
 .hero{height:auto;min-height:365px}.hero-text{padding:30px 38px}.hero h2{font-size:38px;line-height:1.35}.hero p{font-size:20px;line-height:1.6;max-width:490px}.hero-button{margin-top:18px}@media(max-width:1100px){.hero-text{padding:26px}.hero h2{font-size:34px}}@media(max-width:650px){.hero{min-height:0}.hero:has(.hero-photo) .hero-text{padding:25px 20px}.hero h2{font-size:32px}.hero p{font-size:21px}}
+.thai-calendar{width:100%;max-width:100%;overflow:visible;padding:10px 8px;background:#fff;box-shadow:0 4px 14px #173e3808}
+.thai-calendar .rdp-root{width:100%;--rdp-accent-color:#267d70;--rdp-accent-background-color:#e8f3ee;--rdp-day-height:36px;--rdp-day-width:auto;--rdp-day_button-height:34px;--rdp-day_button-width:100%;--rdp-nav-height:38px;--rdp-nav_button-height:34px;--rdp-nav_button-width:32px;font-size:20px}
+.thai-calendar .rdp-months,.thai-calendar .rdp-month{width:100%;max-width:100%;min-width:0}
+.thai-calendar .rdp-month_grid{width:100%;min-width:0;table-layout:fixed;border-collapse:collapse;font-size:20px;text-align:center}
+.thai-calendar .rdp-month_grid th,.thai-calendar .rdp-month_grid td{width:calc(100% / 7);min-width:0;padding:0;border:0;text-align:center;background:transparent}
+.thai-calendar .rdp-month_grid th{height:30px;font-size:18px;font-weight:600;color:#687d75;white-space:normal;opacity:1}
+.thai-calendar .rdp-month_grid td{height:36px;font-size:20px;vertical-align:middle}
+.thai-calendar .rdp-month_caption{height:38px;justify-content:center;padding:0 32px;font-size:22px;line-height:1.2;color:#28564a}
+.thai-calendar .rdp-caption_label{font-weight:700}
+.thai-calendar .rdp-day_button{width:100%;height:34px;min-width:0;margin:1px 0;border-radius:8px;line-height:1;font:inherit}
+.thai-calendar .rdp-selected .rdp-day_button{background:#267d70;color:#fff;border-color:#267d70}
+.thai-calendar .rdp-today:not(.rdp-selected) .rdp-day_button{background:#e8f3ee;font-weight:700}
+.thai-calendar .rdp-disabled{opacity:.35}
+.thai-calendar .rdp-day_button:disabled{cursor:not-allowed;opacity:1}
