@@ -10,6 +10,9 @@ export function bookingNoticeText(b:BookingNotice){
  const headings:Record<string,string>={pending:'🔔 มีคำขอจองใช้สถานที่ใหม่',approved:'✅ อนุมัติการจองใช้สถานที่',rejected:'❌ ไม่อนุมัติการจองใช้สถานที่',cancelled:'🚫 ยกเลิกการจองใช้สถานที่'};
  return [headings[b.status]??'แจ้งสถานะการจอง',bookingDetails(b),'รายละเอียดสำหรับผู้ดูแล: https://revenue.banphru.workers.dev/admin'].join('\n');
 }
+export function bookingReminderText(b:BookingNotice){
+ return ['⏰ แจ้งเตือนล่วงหน้า 1 ชั่วโมง',bookingDetails(b,true),'รายละเอียดสำหรับผู้ดูแล: https://revenue.banphru.workers.dev/admin'].join('\n');
+}
 export async function sendLineMessage(token:string,groupId:string,text:string,retryKey:string,request:typeof fetch=fetch){
  for(let attempt=0;attempt<2;attempt++){
   try{

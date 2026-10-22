@@ -1,11 +1,13 @@
 import handler from "vinext/server/fetch-handler";
 import { sendDailySummary } from "../app/line-daily";
+import { sendBookingReminders } from "../app/line-reminders";
 import { runWithConnectorBinding } from "../lib/connector-context";
 import type { ConnectorBinding } from "../lib/connector-contract.mjs";
 
 export default {
   async scheduled(controller: ScheduledController, env: Cloudflare.Env) {
-    await sendDailySummary(env, controller.scheduledTime);
+    if (controller.cron === '0 1 * * *') await sendDailySummary(env, controller.scheduledTime);
+    else await sendBookingReminders(env, controller.scheduledTime);
   },
   fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
     let binding = ctx.props?.CONNECTORS;

@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import {readFileSync} from 'node:fs';
+import {reminderWindow,sendBookingReminders} from '../app/line-reminders.ts';
+const sql=new DatabaseSync(':memory:');
+sql.exec("CREATE TABLE venues(id TEXT,name TEXT,location TEXT); CREATE TABLE bookings(id TEXT,start_at TEXT,end_at TEXT,status TEXT,purpose TEXT,department TEXT,external_department TEXT,name TEXT,phone TEXT,venue_id TEXT);");
+sql.exec(readFileSync(new URL('../drizzle/0006_line_reminders.sql',import.meta.url),'utf8'));
+const DB={prepare(query){let args=[];return {bind(...values){args=values;return this},async first(){return sql.prepare(query).get(...args)??null},async all(){return {results:sql.prepare(query).all(...args)}},async run(){const r=sql.prepare(query).run(...args);return {meta:{changes:Number(r.changes)}}}}}};
+const env={DB,LINE_CHANNEL_ACCESS_TOKEN:'test',LINE_GROUP_ID:'test'};
+const time=Date.parse('2026-10-22T05:30:00Z');
+assert.deepEqual(reminderWindow(time),{after:'2026-10-22T06:25:00.000Z',until:'2026-10-22T06:30:00.000Z'});
+sql.exec("INSERT INTO venues VALUES ('v','ห้องประชุมชั้น 2','สำนักงานเทศบาลเมืองบ้านพรุ')");
+const insert=(id,offset,status='approved')=>sql.prepare('INSERT INTO bookings VALUES (?,?,?,?,?,?,?,?,?,?)').run(id,new Date(time+offset*60000).toISOString(),new Date(time+(offset+60)*60000).toISOString(),status,'ประชุมทดสอบ','กองยุทธศาสตร์และงบประมาณ','','ผู้จองตัวอย่าง','0000000000','v');
+let calls=[];const request=async(url,options)=>{calls.push(options);return new Response('{}',{status:200})};
+assert.deepEqual(await sendBookingReminders(env,time,request),{sent:0});
+insert('due',60);insert('recovery',56);insert('early',61);insert('late',55);insert('pending',60,'pending');insert('cancelled',60,'cancelled');insert('rejected',60,'rejected');
+assert.deepEqual(await sendBookingReminders(env,time,request),{sent:2});
+assert.equal(calls.length,2);let text=JSON.parse(calls[0].body).messages[0].text;assert(text.includes('⏰ แจ้งเตือนล่วงหน้า 1 ชั่วโมง'));assert(text.includes('ผู้จองตัวอย่าง (0000000000)'));assert(text.includes('สถานะ: อนุมัติแล้ว'));
+assert.deepEqual(await sendBookingReminders(env,time,request),{sent:0});
+// A changed start time gets a distinct reminder; the previous delivery remains deduplicated.
+sql.prepare('UPDATE bookings SET start_at=? WHERE id=?').run(new Date(time+59*60000).toISOString(),'due');assert.deepEqual(await sendBookingReminders(env,time,request),{sent:1});
+insert('retry',60);let keys=[];
+await assert.rejects(sendBookingReminders(env,time,async(url,options)=>{keys.push(options.headers['X-Line-Retry-Key']);return new Response('{}',{status:503})}));
+await sendBookingReminders(env,time,async(url,options)=>{keys.push(options.headers['X-Line-Retry-Key']);return new Response('{}',{status:200})});assert.equal(new Set(keys).size,1);
+console.log('PASS: approved-only 1h reminders, recovery bounds, Thai details, deduplication, rescheduling and stable retry keys');
