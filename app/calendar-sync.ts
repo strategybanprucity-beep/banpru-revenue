@@ -20,5 +20,5 @@ export async function processCalendarSync(e:Cloudflare.Env){
    await writeCalendarEvent(token,config.calendarId,job.booking_id,b);
    await e.DB.prepare('UPDATE calendar_sync_jobs SET synced_revision=?,last_error=NULL WHERE booking_id=?').bind(job.revision,job.booking_id).run();
   }catch{await e.DB.prepare("UPDATE calendar_sync_jobs SET last_error='Google Calendar sync failed' WHERE booking_id=?").bind(job.booking_id).run();}}
- }finally{await e.DB.prepare("UPDATE site_settings SET value='0' WHERE key=? AND value=?").bind(key,String(now+120000)).run();}
+ }finally{await e.DB.prepare("UPDATE site_settings SET value='0' WHERE key=? AND value=?").bind(key,String(now+600000)).run();}
 }
