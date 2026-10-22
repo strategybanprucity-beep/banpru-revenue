@@ -1,4 +1,8 @@
-# LINE booking notifications
+# Active policy: new booking requests only
+
+Only successful new booking requests send a LINE notification. Approval, rejection, cancellation, daily summaries and one-hour reminders are disabled. The production Worker has no scheduled handler and deploys with an empty cron list. Historical delivery tables and inactive helper modules remain for history; they are not invoked.
+
+# Historical implementation reference (inactive features below)
 
 Cloudflare Worker secrets: `LINE_CHANNEL_ACCESS_TOKEN`, `LINE_GROUP_ID`.
 `LINE_CHANNEL_SECRET` is reserved for validating a future webhook; sending notifications does not require a webhook when the target group is already known.
