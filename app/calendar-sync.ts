@@ -1,3 +1,4 @@
+import {TARGET_CALENDAR_ID} from './calendar-target';
 import {env} from 'cloudflare:workers';
 import {openDriveToken} from './drive-connection';
 import {validCalendarScope,writeCalendarEvent,type CalendarBooking} from './calendar-events';
@@ -8,9 +9,9 @@ export async function calendarAccessToken(e:Cloudflare.Env,encrypted:string){
 }
 export async function queueCalendarSync(id:string){try{if(!env.DB||!await calendarConfig())return;await env.DB.prepare('INSERT INTO calendar_sync_jobs (booking_id,updated_at) VALUES (?,?) ON CONFLICT(booking_id) DO UPDATE SET revision=revision+1,updated_at=excluded.updated_at').bind(id,new Date().toISOString()).run();await processCalendarSync(env);}catch{console.error('calendar_sync_queued_retry_required');}}
 export async function processCalendarSync(e:Cloudflare.Env){
- if(!e.DB)return;const config=await calendarConfig(e);if(!config)return;
+ if(!e.DB)return;const config=await calendarConfig(e);if(!config)return;if(config.calendarId!==TARGET_CALENDAR_ID)throw new Error('Calendar target mismatch');
  const now=Date.now(),key='calendar_sync_lock';await e.DB.prepare("INSERT OR IGNORE INTO site_settings (key,value) VALUES (?, '0')").bind(key).run();
- const lock=await e.DB.prepare('UPDATE site_settings SET value=? WHERE key=? AND CAST(value AS INTEGER)<? RETURNING key').bind(String(now+120000),key,now).first();if(!lock)return;
+ const lock=await e.DB.prepare('UPDATE site_settings SET value=? WHERE key=? AND CAST(value AS INTEGER)<? RETURNING key').bind(String(now+600000),key,now).first();if(!lock)return;
  try{
   const jobs=await e.DB.prepare('SELECT booking_id,revision FROM calendar_sync_jobs WHERE revision>synced_revision ORDER BY updated_at LIMIT 25').all<{booking_id:string;revision:number}>();if(!jobs.results.length)return;
   const token=await calendarAccessToken(e,config.token);

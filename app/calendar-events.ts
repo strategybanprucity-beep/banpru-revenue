@@ -1,4 +1,4 @@
-export const CALENDAR_SCOPE='https://www.googleapis.com/auth/calendar.app.created';
+export const CALENDAR_SCOPE='https://www.googleapis.com/auth/calendar.events.owned';
 export function validCalendarScope(value:string){const scopes=value.split(/\s+/);return scopes.includes(CALENDAR_SCOPE)&&!scopes.some(s=>s.startsWith('https://www.googleapis.com/auth/calendar')&&s!==CALENDAR_SCOPE);}
 export type CalendarBooking={id:string;status:string;purpose:string;venue_name:string;location:string;department:string;external_department:string;start_at:string;end_at:string};
 export async function calendarEventId(id:string){const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(id));return 'b'+Array.from(new Uint8Array(hash),n=>n.toString(16).padStart(2,'0')).join('');}
